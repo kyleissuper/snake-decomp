@@ -1,0 +1,319 @@
+<html>
+<head>
+  <title>Snake - Kyle Tan</title>
+  <meta name="viewport" content="initial-scale=1">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 15px 10px;
+    }
+    .buttons {
+      display: block;
+      position: absolute;
+      left: 130px;
+      top: 16px;
+    }
+    button {
+      outline: none;
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      border: none;
+      background: #000;
+      color: #fff;
+      border-radius: 5px;
+      font-size: 20px;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+    #gameContainer {
+      display: inline-block;
+      border: 2px solid black;
+    }
+    .cell {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 1px solid #ccc;
+    }
+    .0 {
+      background: #fff;
+    }
+    .a {
+      background: red;
+    }
+    .h {
+      background: black;
+    }
+    .b {
+      background: green;
+    }
+    .current {
+      font-weight: bold;
+    }
+    .done {
+      text-decoration: line-through;
+    }
+  </style>
+</head>
+<body>
+  <h1>Snake</h1>
+  <div class="buttons"><button id="larr">&larr;</button><button id="uarr">&uarr;</button><button id="darr">&darr;</button><button id="rarr">&rarr;</button></div>
+  <div id="gameContainer"></div>
+  <p><strong>Time to add some polish!</strong></p>
+  <ol>
+  <li class="done">Create a box for the game to take place.</li>
+  <li class="done">Make a dot that moves in a single direction across the screen.</li>
+  <li class="done">Make the next move for the dot controllable with arrow keys.</li>
+  <li class="done">Add a random apple generator.</li>
+  <li class="done">Add collision detection (with wall, apple, and self).</li>
+  <li class="done">Allow snake to lengthen.</li>
+  <li class="current">Any miscellaneous stuff comes at the end (make it pretty, add a score counter, and so on).</li>
+  </ol>
+  <p><a href="index_7.html">Prev</a> | <a href="index.html">Back to page 1</a></p>
+  <script>
+    const game = {
+      init: () => {
+        game.newMatrix();
+        game.newBox();
+        document.onkeydown = game.updateDirection;
+
+        // game loop management code found and copied from https://codeincomplete.com/posts/javascript-game-foundations-the-game-loop
+        game.now = game.timestamp();
+        game.dt = 0;
+        game.last = game.timestamp();
+        game.step = 1/7;
+        requestAnimationFrame(game.frame);
+      },
+      updateDirection: (evt) => {
+        evt = evt || window.evt;
+        evt.preventDefault();
+        let map = {
+          37: "left",
+          38: "up",
+          39: "right",
+          40: "down"
+        };
+        let opposite = {
+          37: "right",
+          38: "down",
+          39: "left",
+          40: "up"
+        };
+        if ([37, 38, 39, 40].includes(evt.keyCode) && opposite[evt.keyCode] !== game.lastDirection) {
+          game.direction = map[evt.keyCode];
+        }
+      },
+      timestamp: () => {
+        return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
+      },
+      frame: () => {
+        game.now = game.timestamp();
+        game.dt = game.dt + Math.min(1, (game.now - game.last)/1000);
+        while (game.dt > game.step) {
+          game.dt = game.dt - game.step;
+          game.refreshMatrix();
+        };
+        game.last = game.now;
+        requestAnimationFrame(game.frame);
+      },
+      newApple: (mx) => {
+        let w = mx[0].length,
+            h = mx.length;
+        while (true) {
+          let i = Math.floor(Math.random() * h),
+              j = Math.floor(Math.random() * w);
+          if (mx[i][j] === 0) {
+            mx[i][j] = "a";
+            return;
+          }
+        }
+      },
+      newMatrix: () => {
+        game.direction = "right";
+        game.lastDirection = "right";
+        game.snakeLength = 2;
+        game.matrix = [
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [1,2,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ];
+        game.newApple(game.matrix);
+      },
+      newBox: () => {
+        game.matrix.forEach((row, i) => {
+          let rowEl = document.createElement("div");
+          rowEl.className = "row";
+          row.forEach((v, j) => {
+            let cellEl = document.createElement("div");
+            cellEl.className = "cell cell" + i + "_" + j;
+            rowEl.appendChild(cellEl);
+          });
+          document.querySelector("#gameContainer").appendChild(rowEl);
+        });
+      },
+      refreshMatrix: () => {
+        let direction = JSON.parse(JSON.stringify(game.direction));
+        game.lastDirection = direction;
+        let ateApple = false;
+        let reload = false;
+        let tmp = JSON.parse(JSON.stringify(game.matrix));
+        game.matrix.forEach((row, i) => {
+          row.forEach((v, j) => {
+            if (v > 0) {
+              let newI = i,
+                  newJ = j;
+              // next cell
+              if (direction === "left") {
+                newJ = j - 1;
+              } else if (direction == "right") {
+                newJ = j + 1;
+              } else if (direction == "up") {
+                newI = i - 1;
+              } else if (direction == "down") {
+                newI = i + 1;
+              }
+              // collision detection time
+              if (newI < 0 || newI > game.matrix.length - 1 ||
+                  newJ < 0 || newJ > game.matrix[0].length - 1) {
+                reload = true;
+              } else if (v === game.snakeLength) {
+                if (game.matrix[newI][newJ] === "a") {
+                  tmp[newI][newJ] = v;
+                  tmp[i][j] = game.matrix[i][j] - 1;
+                  game.snakeLength++;
+                  ateApple = true;
+                } else if (game.matrix[newI][newJ] > 0) {
+                  reload = true;
+                }
+                tmp[i][j] = game.matrix[i][j] - 1;
+                tmp[newI][newJ] = v;
+              } else {
+                tmp[i][j] = game.matrix[i][j] - 1;
+              }
+            }
+          });
+        });
+        if (ateApple === true) {
+          tmp.forEach((tmpRow, ti) => {
+            tmpRow.forEach((tv, tj) => {
+              if (tv > 0) {
+                tmp[ti][tj]++;
+              }
+            })
+          })
+          game.newApple(tmp);
+        }
+        game.matrix = tmp;
+        if (reload === true) {
+          game.newMatrix();
+        }
+        game.refreshBox();
+      },
+      refreshBox: () => {
+        game.matrix.forEach((row, i) => {
+          row.forEach((v, j) => {
+            game.refreshCell(i, j, v);
+          });
+        });
+      },
+      refreshCell: (i, j, value) => {
+        if (value === game.snakeLength) {
+          value = "h";
+        } else if (value !== "a" && value > 0) {
+          value = "b";
+        }
+        let cell = document.querySelector(".cell" + i + "_" + j);
+        cell.className = "cell cell" + i + "_" + j + " " + value;
+      }
+    };
+    game.init();
+    document.querySelectorAll("button").forEach((button) => {
+      button.addEventListener("click", () => {
+        let evt = {preventDefault: () => {}};
+        if (button.id === "larr") {
+          evt.keyCode = 37;
+        } else if (button.id === "uarr") {
+          evt.keyCode = 38;
+        } else if (button.id === "rarr") {
+          evt.keyCode = 39;
+        } else if (button.id === "darr") {
+          evt.keyCode = 40;
+        }
+        game.updateDirection(evt);
+      });
+    });
+    // Stole swiping logic from my old stuff: https://github.com/kyleissuper/2048/blob/master/index.html
+    const swipe = {
+      el: document.querySelector("#gameContainer"),
+      threshold: 50,
+      init: () => {
+        swipe.el.addEventListener("touchstart", swipe.handleStart);
+        swipe.el.addEventListener("touchend", swipe.handleEnd);
+      },
+      startCoords: { x:0, y:0 },
+      endCoords: { x:0, y:0 },
+      handleStart: (evt) => {
+        evt.preventDefault();
+        swipe.startCoords.x = evt.targetTouches[0].clientX;
+        swipe.startCoords.y = evt.targetTouches[0].clientY;
+      },
+      handleEnd: (evt) => {
+        swipe.endCoords.x = evt.changedTouches[0].clientX;
+        swipe.endCoords.y = evt.changedTouches[0].clientY;
+        let ltr = swipe.endCoords.x - swipe.startCoords.x,
+            ud = swipe.endCoords.y - swipe.startCoords.y;
+        if (Math.abs(ltr) > Math.abs(ud)) {
+          if (ltr > 0) {
+            swipe.swiped("right", ltr);
+          } else {
+            swipe.swiped("left", ltr);
+          }
+        } else {
+          if (ud < 0) {
+            swipe.swiped("up", ud);
+          } else {
+            swipe.swiped("down", ud);
+          }
+        }
+      },
+      swiped: (direction, diff) => {
+        if (Math.abs(diff) > swipe.threshold) {
+          let evt = {preventDefault: () => {}};
+          if (direction === "left") {
+            evt.keyCode = 37;
+          } else if (direction === "up") {
+            evt.keyCode = 38;
+          } else if (direction === "right") {
+            evt.keyCode = 39;
+          } else if (direction === "down") {
+            evt.keyCode = 40;
+          }
+          game.updateDirection(evt);
+        }
+      }
+    };
+    swipe.init();
+  </script>
+</body>
+</html>
