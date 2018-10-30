@@ -1,0 +1,179 @@
+<html>
+<head>
+<style>
+#gameContainer {
+  display: inline-block;
+  border: 2px solid black;
+}
+.cell {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ccc;
+}
+.blank {
+  background: #fff;
+}
+.apple {
+  background: red;
+}
+.head {
+  background: green;
+}
+.current {
+  font-weight: bold;
+}
+.done {
+  text-decoration: line-through;
+}
+</style>
+</head>
+<body>
+  <h1>Snake Decomp</h1>
+  <div id="gameContainer"></div>
+  <ol>
+  <li class="done">Create a box for the game to take place.</li>
+  <li class="done">Make a dot that moves in a single direction across the screen.</li>
+  <li class="done">Make the next move for the dot controllable with arrow keys.</li>
+  <li class="current">Add a random apple generator.</li>
+  <li>Add collision detection (with wall, apple, and self).</li>
+  <li>Allow snake to lengthen.</li>
+  <li>Any miscellaneous stuff comes at the end (make it pretty, add a score counter, and so on).</li>
+  </ol>
+  <p><a href="index_5.html">Prev</a> | <a href="index_7.html">Next</a></p>
+  <script>
+    const game = {
+      init: () => {
+        game.newMatrix();
+        game.newBox();
+        document.onkeydown = game.updateDirection;
+
+        // game loop management code found and copied from https://codeincomplete.com/posts/javascript-game-foundations-the-game-loop
+        game.now = game.timestamp();
+        game.dt = 0;
+        game.last = game.timestamp();
+        game.step = 1/3;
+        requestAnimationFrame(game.frame);
+      },
+      updateDirection: (evt) => {
+        evt = evt || window.evt;
+        evt.preventDefault();
+        let map = {
+          37: "left",
+          38: "up",
+          39: "right",
+          40: "down"
+        };
+        game.direction = map[evt.keyCode];
+      },
+      timestamp: () => {
+        return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
+      },
+      frame: () => {
+        game.now = game.timestamp();
+        game.dt = game.dt + Math.min(1, (game.now - game.last)/1000);
+        while (game.dt > game.step) {
+          game.dt = game.dt - game.step;
+          try {
+            game.refreshMatrix();
+          } catch(err) {
+            location.reload();
+          }
+        };
+        game.last = game.now;
+        requestAnimationFrame(game.frame);
+      },
+      direction: "right",
+      newApple: () => {
+        let w = game.matrix[0].length,
+            h = game.matrix.length;
+        while (game.matrix[Math.floor(Math.random() * h)][Math.floor(Math.random() * w)] !== 0) {
+        }
+        game.matrix[Math.floor(Math.random() * h)][Math.floor(Math.random() * w)] = "a";
+      },
+      newMatrix: () => {
+        game.matrix = [
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,"h",0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ];
+      },
+      newBox: () => {
+        game.matrix.forEach((row, i) => {
+          let rowEl = document.createElement("div");
+          rowEl.className = "row";
+          row.forEach((v, j) => {
+            let cellEl = document.createElement("div");
+            cellEl.className = "cell cell" + i + "_" + j;
+            rowEl.appendChild(cellEl);
+          });
+          document.querySelector("#gameContainer").appendChild(rowEl);
+        });
+        game.newApple();
+      },
+      refreshMatrix: () => {
+        let tmp = JSON.parse(JSON.stringify(game.matrix));
+        game.matrix.forEach((row, i) => {
+          row.forEach((v, j) => {
+            if (v == "h") {
+              if (game.direction === "left") {
+                tmp[i][j] = 0;
+                tmp[i][j-1] = "h";
+              } else if (game.direction == "right") {
+                tmp[i][j] = 0;
+                tmp[i][j+1] = "h";
+              } else if (game.direction == "up") {
+                tmp[i][j] = 0;
+                tmp[i-1][j] = "h";
+              } else if (game.direction == "down") {
+                tmp[i][j] = 0;
+                tmp[i+1][j] = "h";
+              }
+            }
+          });
+        });
+        game.matrix = tmp;
+        game.refreshBox();
+      },
+      refreshBox: () => {
+        game.matrix.forEach((row, i) => {
+          row.forEach((v, j) => {
+            game.refreshCell(i, j, v);
+          });
+        });
+      },
+      refreshCell: (i, j, value) => {
+        let cell = document.querySelector(".cell" + i + "_" + j);
+        let map = {
+          0: "blank",
+          "a": "apple",
+          "h": "head",
+          "t": "tail"
+        };
+        cell.className = "cell cell" + i + "_" + j + " " + map[value];
+      }
+    };
+    game.init();
+  </script>
+</body>
+</html>
