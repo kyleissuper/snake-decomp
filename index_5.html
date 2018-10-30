@@ -30,19 +30,20 @@
   <div id="gameContainer"></div>
   <ol>
   <li class="done">Create a box for the game to take place.</li>
-  <li class="current">Make a dot that moves in a single direction across the screen.</li>
-  <li>Make the next move for the dot controllable with arrow keys.</li>
+  <li class="done">Make a dot that moves in a single direction across the screen.</li>
+  <li class="current">Make the next move for the dot controllable with arrow keys.</li>
   <li>Add a random apple generator.</li>
   <li>Add collision detection (with wall, apple, and self).</li>
   <li>Allow snake to lengthen.</li>
   <li>Any miscellaneous stuff comes at the end (make it pretty, add a score counter, and so on).</li>
   </ol>
-  <p><a href="index_3.html">Prev</a> | <a href="index_5.html">Next</a></p>
+  <p><a href="index_4.html">Prev</a> | <a href="index_6.html">Next</a></p>
   <script>
     const game = {
       init: () => {
         game.newMatrix();
         game.newBox();
+        document.onkeydown = game.updateDirection;
 
         // game loop management code found and copied from https://codeincomplete.com/posts/javascript-game-foundations-the-game-loop
         game.now = game.timestamp();
@@ -50,6 +51,17 @@
         game.last = game.timestamp();
         game.step = 1/3;
         requestAnimationFrame(game.frame);
+      },
+      updateDirection: (evt) => {
+        evt = evt || window.evt;
+        evt.preventDefault();
+        let map = {
+          37: "left",
+          38: "up",
+          39: "right",
+          40: "down"
+        };
+        game.direction = map[evt.keyCode];
       },
       timestamp: () => {
         return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
@@ -78,7 +90,7 @@
           [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
           [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
           [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-          ["h",0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,"h",0,0,0,0,0,0,0,0],
           [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
           [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
           [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -108,10 +120,21 @@
         let tmp = JSON.parse(JSON.stringify(game.matrix));
         game.matrix.forEach((row, i) => {
           row.forEach((v, j) => {
-              if (v == "h") {
+            if (v == "h") {
+              if (game.direction === "left") {
+                tmp[i][j] = 0;
+                tmp[i][j-1] = "h";
+              } else if (game.direction == "right") {
                 tmp[i][j] = 0;
                 tmp[i][j+1] = "h";
+              } else if (game.direction == "up") {
+                tmp[i][j] = 0;
+                tmp[i-1][j] = "h";
+              } else if (game.direction == "down") {
+                tmp[i][j] = 0;
+                tmp[i+1][j] = "h";
               }
+            }
           });
         });
         game.matrix = tmp;
