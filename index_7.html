@@ -1,0 +1,228 @@
+<html>
+<head>
+<style>
+  #gameContainer {
+    display: inline-block;
+    border: 2px solid black;
+  }
+  .cell {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #ccc;
+  }
+  .0 {
+    background: #fff;
+  }
+  .a {
+    background: red;
+  }
+  .h {
+    background: black;
+  }
+  .b {
+    background: green;
+  }
+  .current {
+    font-weight: bold;
+  }
+  .done {
+    text-decoration: line-through;
+  }
+</style>
+</head>
+<body>
+  <h1>Snake Decomp</h1>
+  <div id="gameContainer"></div>
+  <p><strong>We're back! Starting the timer again. Also, it seems like steps five and six need to be solved together, so let's do that.</strong></p>
+  <p><strong>Damn, looks like this was the hardest part. Took 3 hours to make it work!</strong></p>
+  <ol>
+  <li class="done">Create a box for the game to take place.</li>
+  <li class="done">Make a dot that moves in a single direction across the screen.</li>
+  <li class="done">Make the next move for the dot controllable with arrow keys.</li>
+  <li class="done">Add a random apple generator.</li>
+  <li class="current">Add collision detection (with wall, apple, and self).</li>
+  <li class="current">Allow snake to lengthen.</li>
+  <li>Any miscellaneous stuff comes at the end (make it pretty, add a score counter, and so on).</li>
+  </ol>
+  <p><a href="index_6.html">Prev</a> | <a href="index_8.html">Next</a></p>
+  <script>
+    const game = {
+      init: () => {
+        game.newMatrix();
+        game.newBox();
+        document.onkeydown = game.updateDirection;
+
+        // game loop management code found and copied from https://codeincomplete.com/posts/javascript-game-foundations-the-game-loop
+        game.now = game.timestamp();
+        game.dt = 0;
+        game.last = game.timestamp();
+        game.step = 1/7;
+        requestAnimationFrame(game.frame);
+      },
+      updateDirection: (evt) => {
+        evt = evt || window.evt;
+        evt.preventDefault();
+        let map = {
+          37: "left",
+          38: "up",
+          39: "right",
+          40: "down"
+        };
+        let opposite = {
+          37: "right",
+          38: "down",
+          39: "left",
+          40: "up"
+        };
+        if ([37, 38, 39, 40].includes(evt.keyCode) && opposite[evt.keyCode] !== game.lastDirection) {
+          game.direction = map[evt.keyCode];
+        }
+      },
+      timestamp: () => {
+        return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
+      },
+      frame: () => {
+        game.now = game.timestamp();
+        game.dt = game.dt + Math.min(1, (game.now - game.last)/1000);
+        while (game.dt > game.step) {
+          game.dt = game.dt - game.step;
+          game.refreshMatrix();
+        };
+        game.last = game.now;
+        requestAnimationFrame(game.frame);
+      },
+      newApple: (mx) => {
+        let w = mx[0].length,
+            h = mx.length;
+        while (true) {
+          let i = Math.floor(Math.random() * h),
+              j = Math.floor(Math.random() * w);
+          if (mx[i][j] === 0) {
+            mx[i][j] = "a";
+            return;
+          }
+        }
+      },
+      newMatrix: () => {
+        game.direction = "right";
+        game.lastDirection = "right";
+        game.snakeLength = 2;
+        game.matrix = [
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [1,2,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ];
+        game.newApple(game.matrix);
+      },
+      newBox: () => {
+        game.matrix.forEach((row, i) => {
+          let rowEl = document.createElement("div");
+          rowEl.className = "row";
+          row.forEach((v, j) => {
+            let cellEl = document.createElement("div");
+            cellEl.className = "cell cell" + i + "_" + j;
+            rowEl.appendChild(cellEl);
+          });
+          document.querySelector("#gameContainer").appendChild(rowEl);
+        });
+      },
+      refreshMatrix: () => {
+        let direction = JSON.parse(JSON.stringify(game.direction));
+        game.lastDirection = direction;
+        let ateApple = false;
+        let reload = false;
+        let tmp = JSON.parse(JSON.stringify(game.matrix));
+        game.matrix.forEach((row, i) => {
+          row.forEach((v, j) => {
+            if (v > 0) {
+              let newI = i,
+                  newJ = j;
+              // next cell
+              if (direction === "left") {
+                newJ = j - 1;
+              } else if (direction == "right") {
+                newJ = j + 1;
+              } else if (direction == "up") {
+                newI = i - 1;
+              } else if (direction == "down") {
+                newI = i + 1;
+              }
+              // collision detection time
+              if (newI < 0 || newI > game.matrix.length - 1 ||
+                  newJ < 0 || newJ > game.matrix[0].length - 1) {
+                reload = true;
+              } else if (v === game.snakeLength) {
+                if (game.matrix[newI][newJ] === "a") {
+                  tmp[newI][newJ] = v;
+                  tmp[i][j] = game.matrix[i][j] - 1;
+                  game.snakeLength++;
+                  ateApple = true;
+                } else if (game.matrix[newI][newJ] > 0) {
+                  reload = true;
+                }
+                tmp[i][j] = game.matrix[i][j] - 1;
+                tmp[newI][newJ] = v;
+              } else {
+                tmp[i][j] = game.matrix[i][j] - 1;
+              }
+            }
+          });
+        });
+        if (ateApple === true) {
+          tmp.forEach((tmpRow, ti) => {
+            tmpRow.forEach((tv, tj) => {
+              if (tv > 0) {
+                tmp[ti][tj]++;
+              }
+            })
+          })
+          game.newApple(tmp);
+        }
+        game.matrix = tmp;
+        if (reload === true) {
+          game.newMatrix();
+        }
+        game.refreshBox();
+      },
+      refreshBox: () => {
+        game.matrix.forEach((row, i) => {
+          row.forEach((v, j) => {
+            game.refreshCell(i, j, v);
+          });
+        });
+      },
+      refreshCell: (i, j, value) => {
+        if (value === game.snakeLength) {
+          value = "h";
+        } else if (value !== "a" && value > 0) {
+          value = "b";
+        }
+        let cell = document.querySelector(".cell" + i + "_" + j);
+        cell.className = "cell cell" + i + "_" + j + " " + value;
+      }
+    };
+    game.init();
+  </script>
+</body>
+</html>
