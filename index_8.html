@@ -81,7 +81,7 @@
   <div id="gameContainer"></div>
   <p><strong>Time to add some polish! Total time taken: 8 hours from start to finish. Not quite 1.5 hours, but still satisfying!</strong></p>
   <p><strong>Update 1:</strong> came back for another hour to refactor the game.refreshMatrix() logic, and add a high score counter.</p>
-  <p><strong>Update 2:</strong> another thirty minutes to turn the counter into two counters and make them more explicit.</p>
+  <p><strong>Update 2:</strong> another hour to turn the counter into two counters and make them more explicit, and also track the high score in localStorage.</p>
   <ol>
   <li class="done">Create a box for the game to take place.</li>
   <li class="done">Make a dot that moves in a single direction across the screen.</li>
@@ -106,6 +106,23 @@
         game.last = game.timestamp();
         game.step = 1/7;
         requestAnimationFrame(game.frame);
+      },
+      loadHighScore: () => {
+        if (!typeof(Storage) !== "undefined") {
+          if (!localStorage["highScore"]) {
+            localStorage["highScore"] = 2;
+          }
+          game.HS = localStorage["highScore"];
+        } else {
+          game.HS = Math.max(game.HS || 2, game.snakeLength);
+        }
+      },
+      saveHighScore: () => {
+        if (!typeof(Storage) !== "undefined") {
+          if (localStorage["highScore"] < game.HS) {
+            localStorage["highScore"] = game.HS;
+          }
+        }
       },
       updateDirection: (evt) => {
         evt = evt || window.evt;
@@ -155,6 +172,7 @@
         game.direction = "right";
         game.lastDirection = "right";
         game.snakeLength = 2;
+        game.loadHighScore();
         game.matrix = [
           [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
           [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -244,6 +262,7 @@
         // Now make use of the status to
         // update the matrix
         if (status === "reload") {
+          game.saveHighScore();
           game.newMatrix();
         } else if (status === "ateApple") {
           game.snakeLength++;
@@ -272,7 +291,7 @@
         });
       },
       refreshTitle: () => {
-        game.HS = Math.max(game.HS || 2, game.snakeLength);
+        game.HS = Math.max(game.HS, game.snakeLength);
         document.querySelector("#currentScore").innerHTML = game.snakeLength;
         document.querySelector("#highScore").innerHTML = game.HS;
       },
