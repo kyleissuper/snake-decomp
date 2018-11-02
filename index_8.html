@@ -5,19 +5,20 @@
   <style>
     body {
       font-family: sans-serif;
-      padding: 15px 10px;
+      padding: 0 10px 20px 10px;
+      margin: 0 8px;
     }
     .buttons {
       display: block;
       position: absolute;
-      left: 130px;
-      top: 16px;
+      left: 124px;
+      top: 19px;
     }
     button {
       outline: none;
       display: inline-block;
-      width: 50px;
-      height: 50px;
+      width: 52px;
+      height: 52px;
       border: none;
       background: #000;
       color: #fff;
@@ -29,6 +30,15 @@
     #gameContainer {
       display: inline-block;
       border: 2px solid black;
+    }
+    .score {
+      padding: 15px 0;
+    }
+    .score span {
+      display: block;
+    }
+    .scoreLabel {
+      font-size: 10px;
     }
     .cell {
       display: inline-block;
@@ -57,11 +67,21 @@
   </style>
 </head>
 <body>
-  <h1 id="gameTitle"></h1>
+  <section class="score">
+    <div>
+      <span class="scoreLabel">Current Score</span>
+      <span id="currentScore"></span>
+    </div>
+    <div>
+      <span class="scoreLabel">High Score</span>
+      <span id="highScore"></span>
+    </div>
+  </section>
   <div class="buttons"><button id="larr">&larr;</button><button id="uarr">&uarr;</button><button id="darr">&darr;</button><button id="rarr">&rarr;</button></div>
   <div id="gameContainer"></div>
   <p><strong>Time to add some polish! Total time taken: 8 hours from start to finish. Not quite 1.5 hours, but still satisfying!</strong></p>
-  <p><strong>Update:</strong> came back for another hour to refactor the game.refreshMatrix() logic, and add a high score counter.</p>
+  <p><strong>Update 1:</strong> came back for another hour to refactor the game.refreshMatrix() logic, and add a high score counter.</p>
+  <p><strong>Update 2:</strong> another thirty minutes to turn the counter into two counters and make them more explicit.</p>
   <ol>
   <li class="done">Create a box for the game to take place.</li>
   <li class="done">Make a dot that moves in a single direction across the screen.</li>
@@ -253,7 +273,8 @@
       },
       refreshTitle: () => {
         game.HS = Math.max(game.HS || 2, game.snakeLength);
-        document.querySelector("#gameTitle").innerHTML = game.HS;
+        document.querySelector("#currentScore").innerHTML = game.snakeLength;
+        document.querySelector("#highScore").innerHTML = game.HS;
       },
       refreshCell: (i, j, value) => {
         if (value === game.snakeLength) {
